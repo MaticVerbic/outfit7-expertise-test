@@ -1,9 +1,4 @@
-# outfit7-expertise-test
-
-
-## Questions and assumptions about the task:
-
-### Data
+# Data
 1. What format is the data delivered in? <br/>
    Assumption: data is returned in a json format. <br/>
    Assumption #2: data to be served is always latest. <br/>
@@ -122,7 +117,7 @@
    - OS
    - Device type (tablet, smartphone, smart tv, ...)
 
-### Storage
+# Storage
 1. Should data be continuously collected directly from the pipe's output?
    To ensure the minimum downtime in case of system failure in other services, collection should only happen once per processing stage lifecycle.
 2. Should data be stored in memory/database?
@@ -131,7 +126,7 @@
 3. Should data be stored post transformation?
    - Since the only transformation to happen is a change in order and filtering, storing the data would be useful for long term monitoring and testing.
 
-### Architecture
+# Architecture
 1. What security measures need to be implemented on API level?
    - Specifications show no required security settings, authorization should still be implemented.
 2. Transformation at API call or separate concurrent engine with in memory storage?
@@ -156,7 +151,7 @@
 
 
 
-### System schema
+# System schema
 
 
 ```
