@@ -1,5 +1,11 @@
 # outfit7-expertise-test
 
+## Design decisions
+  1. Programming language: Go
+  2. Http framework: chi
+  3. Virtualization: Yes, docker(-compose)
+  4. Networking: Using traefik and my personal domain (local.verbic.pro) for local routing and development. User requires to remember no ports.
+  5. Storage: Decided to add Redis as an ad hoc storage to allow for horizontal scaling as well as a vertical one.
 
 ## Questions and assumptions about the task:
 
@@ -139,6 +145,7 @@
    - Only filtering through the data should be done at api call.
 3. What happens if no relevant data exists?
    - Return a random AdNetwork.
+   - Could possibly group countries by continent and return a country in the same continent.
 4. REST or GraphQL?
    - Specifications call for REST, GraphQL could speed up client side data parsing.
 5. Possible filters at request time and how to implement?

@@ -1,0 +1,48 @@
+version: "3"
+services:
+  traefik:
+    image: "traefik"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - "providers.docker.network=traefik"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - traefik
+
+  api:
+    image: golang:1.13
+    working_dir: /app
+    env_file: .env
+    volumes:
+      - "$GOPATH:/go"
+      - ".:/app"
+    expose:
+      - 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.local.verbic.pro`)"
+      - "traefik.docker.network=traefik"
+    networks:
+      - traefik
+
+  redis:
+    image: "redis:alpine"
+    command: redis-server
+    ports:
+     - "6379:6379"
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external:
+      name: traefik
