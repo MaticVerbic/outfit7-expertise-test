@@ -50,7 +50,7 @@ func New(test bool) *Config {
 			log.Fatal(err)
 		}
 	} else {
-		err := gotenv.Load("./../.env")
+		err := gotenv.Load("../.env")
 		if err != nil {
 			log.Fatal(err)
 		}
