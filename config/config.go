@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/go-redis/redis"
+	"github.com/pkg/errors"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -73,7 +74,7 @@ func New(test bool) *Config {
 		})
 
 		if _, err := c.RedisClient.Ping().Result(); err != nil {
-			logrus.Fatal(err)
+			logrus.Fatal(errors.Wrap(err, "failed to connect to redis"))
 		}
 	}
 

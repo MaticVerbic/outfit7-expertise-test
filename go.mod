@@ -3,7 +3,7 @@ module expertisetest
 go 1.13
 
 require (
-	github.com/davecgh/go-spew v1.1.1
+	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect

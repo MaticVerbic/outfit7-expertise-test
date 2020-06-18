@@ -35,10 +35,9 @@ services:
   redis:
     image: "redis:alpine"
     command: redis-server
+    container_name: "redis"
     ports:
      - "6379:6379"
-    labels:
-      - "traefik.enable=false"
     networks:
       - traefik
 
