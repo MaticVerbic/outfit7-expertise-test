@@ -21,7 +21,15 @@ var (
 // GetInstance always returns the same instance of Config
 func GetInstance() *Config {
 	once.Do(func() {
-		instance = New()
+		instance = New(false)
+	})
+	return instance
+}
+
+// GetTestInstance always returns the same instance of Config
+func GetTestInstance() *Config {
+	once.Do(func() {
+		instance = New(true)
 	})
 	return instance
 }
@@ -34,11 +42,18 @@ type Config struct {
 }
 
 // New Config
-func New() *Config {
+func New(test bool) *Config {
 	// handle env
-	err := gotenv.Load()
-	if err != nil {
-		log.Fatal(err)
+	if !test {
+		err := gotenv.Load()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		err := gotenv.Load("./../.env")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	viper.AutomaticEnv()
 
@@ -50,14 +65,16 @@ func New() *Config {
 	// handle logger
 	c.initLogger()
 
-	c.RedisClient = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", viper.GetString("REDIS_HOST"), viper.GetInt("REDIS_PORT")),
-		Password: viper.GetString("REDIS_PASSWORD"),
-		DB:       viper.GetInt("REDIS_DB"),
-	})
+	if !test {
+		c.RedisClient = redis.NewClient(&redis.Options{
+			Addr:     fmt.Sprintf("%s:%d", viper.GetString("REDIS_HOST"), viper.GetInt("REDIS_PORT")),
+			Password: viper.GetString("REDIS_PASSWORD"),
+			DB:       viper.GetInt("REDIS_DB"),
+		})
 
-	if _, err := c.RedisClient.Ping().Result(); err != nil {
-		logrus.Fatal(err)
+		if _, err := c.RedisClient.Ping().Result(); err != nil {
+			logrus.Fatal(err)
+		}
 	}
 
 	return c

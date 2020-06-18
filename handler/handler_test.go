@@ -77,8 +77,8 @@ func TestLoad(t *testing.T) {
 	logger := logrus.New()
 	logger.SetOutput(ioutil.Discard)
 
-	config.GetInstance().Pipefile = "pipefile.json"
-	config.GetInstance().Prefilter = "prefilter.json"
+	config.GetTestInstance().Pipefile = "pipefile.json"
+	config.GetTestInstance().Prefilter = "prefilter.json"
 	h, err := New(logrus.NewEntry(logger))
 	if err != nil {
 		t.Error(err)
