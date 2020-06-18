@@ -1,13 +1,20 @@
 # outfit7-expertise-test
+![tests](https://github.com/MaticVerbic/outfit7-expertise-test/workflows/test/badge.svg)
 
 ## Design decisions
   1. Programming language: Go
-  2. Http framework: chi
+  2. HTTP framework: chi
   3. Virtualization: Yes, docker(-compose)
   4. Networking: Using traefik and my personal domain (local.verbic.pro) for local routing and development. User requires to remember no ports.
-  5. Storage: Decided to add Redis as an ad hoc storage to allow for horizontal scaling as well as a vertical one.
+  5. Storage: Decided to add Redis as a storage to allow for horizontal scaling as well as a vertical one. Elasticsearch provides better DSL for querying, making it easier to implement dynamic filtering, redis offers a simple alternative for a single field filter (by country) required in specifications as well as easier implementation and also eliminates the need for another API wrapper. Requirement for independent storage arises since we want to keep the API service horizontally scalable, meaning that having multiple instances of the same api would require syncing /update call to all instances in order to keep every one of them up to date. This implementation ensures that a call to /update to any instance of the API triggers the update for all instances.
+  6. Filtering: Implemented a pre(static) and post(dynamic) filtering solution. Initially as storage is filled and or updated a static filter is called to filter out everything by rules independent of the client (such as facebook in china) and remove mutually exclusive ad networks or networks that should be included by priority list. On api call only run filters related to client such as operating system or device. This implementation was decided due to the fact that data structures of choice are lists and could possibly require O(n) traversal for each filter. This ensures that only a single AdNetwork is filtered through at api call. Possible improvements: since most of the filtering out is done using rules and provider name/country, a self balancing binary tree by name could be used to improve lookup times during this process.
+  TODO:
+    - Possible bugs:
+      - If random key is returned due to no country association (optimal or not), could include incorrectly filtered output.
+        Possible solution: Run both prefilter and postfilter on a single AdNetwork...
 
-## Questions and assumptions about the task:
+
+## Initial questions and assumptions about the task:
 
 ### Data
 1. What format is the data delivered in? <br/>

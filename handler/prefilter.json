@@ -1,0 +1,20 @@
+{
+ "prefilterMappings": [
+    {
+      "type": "excCtr",
+      "args": {
+        "CN": ["Facebook"],
+        "US": ["Huawei Ads"]
+      }
+    },
+    {
+      "type": "mutPri",
+      "args": {
+        "p1": [
+          "AdMob",
+          "AdMob-OptOut"
+        ]
+      }
+    }
+  ]
+}

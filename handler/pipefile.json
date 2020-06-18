@@ -1,0 +1,74 @@
+{
+  "data":[
+    {
+      "country":"US",
+      "banner":[
+        {
+          "provider":"Facebook",
+          "score":8.0
+        },
+        {
+          "provider":"AdMob",
+          "score":3.0
+        },
+        {
+          "provider":"Huawei Ads",
+          "score":5.0
+        },
+        {
+          "provider":"AdMob-OptOut",
+          "score":3.0
+        }
+      ],
+      "video":[
+        {
+          "provider":"Facebook",
+          "score":10.0
+        },
+        {
+          "provider":"AdMob",
+          "score":9.9
+        },
+        {
+          "provider":"Huawei Ads",
+          "score":2.1
+        }
+      ]
+    },
+    {
+      "country":"CN",
+      "banner":[
+        {
+          "provider":"Facebook",
+          "score":5.0
+        },
+        {
+          "provider":"AdMob-OptOut",
+          "score":10.0
+        },
+        {
+          "provider":"Huawei Ads",
+          "score":8.0
+        }
+      ],
+      "interstitial":[
+        {
+          "provider":"Facebook",
+          "score":10.0
+        },
+        {
+          "provider":"AdMob",
+          "score":9.9
+        },
+        {
+          "provider":"AdMob-OptOut",
+          "score":10.0
+        },
+        {
+          "provider":"Huawei Ads",
+          "score":2.1
+        }
+      ]
+    }
+  ]
+}
