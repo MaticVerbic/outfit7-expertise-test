@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
@@ -35,7 +36,10 @@ type Config struct {
 // New Config
 func New() *Config {
 	// handle env
-	gotenv.Load()
+	err := gotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 	viper.AutomaticEnv()
 
 	c := &Config{

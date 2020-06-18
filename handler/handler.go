@@ -20,16 +20,19 @@ const (
 	mutualPriority filterType = "mutPri"
 )
 
+// Handler handles loading and filtering of data.
 type Handler struct {
 	log               *logrus.Entry
 	PrefilterMappings []Prefilter `json:"prefilterMappings"`
 }
 
+// Prefilter is a definition of a filter running on load.
 type Prefilter struct {
 	FilterType filterType          `json:"type"`
 	Args       map[string][]string `json:"args"`
 }
 
+// New returns a new Handler.
 func New(log *logrus.Entry) (*Handler, error) {
 	h := &Handler{
 		log: log.WithField("package", "handler"),
@@ -42,10 +45,12 @@ func New(log *logrus.Entry) (*Handler, error) {
 	return h, nil
 }
 
+// LoadObject simulates a json object returned by pipeline.
 type LoadObject struct {
 	AdNetwork []*adnetwork.AdNetwork `json:"data"`
 }
 
+// LoadPrefilter loads prefilter settings and mappings from config file.
 func (h *Handler) LoadPrefilter() error {
 	b, err := ioutil.ReadFile(config.GetInstance().Prefilter)
 	if err != nil {
@@ -59,6 +64,7 @@ func (h *Handler) LoadPrefilter() error {
 	return nil
 }
 
+// Exclude removes all providers in the list from a specified network.
 func (h *Handler) Exclude(an *adnetwork.AdNetwork, providers []string) *adnetwork.AdNetwork {
 	var wg sync.WaitGroup
 
@@ -83,6 +89,7 @@ func (h *Handler) Exclude(an *adnetwork.AdNetwork, providers []string) *adnetwor
 	return an
 }
 
+// MutualPriority removes all providers except the first one found, list has to be sorted by priority.
 func (h *Handler) MutualPriority(an *adnetwork.AdNetwork, providers []string) *adnetwork.AdNetwork {
 	var wg sync.WaitGroup
 
@@ -161,6 +168,7 @@ func (h *Handler) Prefilter(an []*adnetwork.AdNetwork) []*adnetwork.AdNetwork {
 	return arr
 }
 
+// Load is the main method to simulate fetching data from pipeline.
 func (h *Handler) Load() (map[string]*adnetwork.AdNetwork, error) {
 	b, err := ioutil.ReadFile(config.GetInstance().Pipefile)
 	if err != nil {
@@ -176,6 +184,7 @@ func (h *Handler) Load() (map[string]*adnetwork.AdNetwork, error) {
 	return toCountryMap(filtered)
 }
 
+// returns an array of ad networks as a map[country]network
 func toCountryMap(an []*adnetwork.AdNetwork) (map[string]*adnetwork.AdNetwork, error) {
 	m := map[string]*adnetwork.AdNetwork{}
 
@@ -190,6 +199,7 @@ func toCountryMap(an []*adnetwork.AdNetwork) (map[string]*adnetwork.AdNetwork, e
 	return m, nil
 }
 
+// removes sdks from network if they contain given providers.
 func excludeFromSDK(arr []*adnetwork.SDK, providers []string) []*adnetwork.SDK {
 	if len(arr) == 0 {
 		return []*adnetwork.SDK{}
