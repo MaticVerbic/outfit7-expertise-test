@@ -36,7 +36,9 @@ func New() *Server {
 	}
 
 	s.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
+		if _, err := w.Write([]byte("Hello World!")); err != nil {
+			w.WriteHeader(500)
+		}
 	})
 
 	return &Server{
