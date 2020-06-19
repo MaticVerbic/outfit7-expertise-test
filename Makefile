@@ -6,6 +6,12 @@ api:
 test:
 	$(dc_run) go test -v ./...
 
+integration:
+	$(dc_run) go test -v --tags=integration ./...
+
+warmup:
+	$(dc_run) go run cmd/cache/main.go
+
 up:
 	docker network create traefik || true
 	docker-compose up -d traefik

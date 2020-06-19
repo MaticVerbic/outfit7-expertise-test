@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"expertisetest/adnetwork"
 	"expertisetest/config"
 	"fmt"
@@ -10,8 +9,27 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"github.com/pquerna/ffjson/ffjson"
 	"github.com/sirupsen/logrus"
 )
+
+var (
+	instance *Handler
+	once     sync.Once
+)
+
+// GetInstance always returns the same instance of Handler.
+// Also ensuring the filter configs only get loaded once, instead of each api call.
+func GetInstance() *Handler {
+	once.Do(func() {
+		var err error
+		instance, err = New()
+		if err != nil {
+			logrus.Fatal(err)
+		}
+	})
+	return instance
+}
 
 type filterType string
 
@@ -20,10 +38,9 @@ const (
 	mutualPriority filterType = "mutPri"
 )
 
-// Handler handles loading and filtering of data.
-type Handler struct {
-	log               *logrus.Entry
-	PrefilterMappings []Prefilter `json:"prefilterMappings"`
+// LoadObject simulates a json object returned by pipeline.
+type LoadObject struct {
+	AdNetwork []*adnetwork.AdNetwork `json:"data"`
 }
 
 // Prefilter is a definition of a filter running on load.
@@ -32,10 +49,16 @@ type Prefilter struct {
 	Args       map[string][]string `json:"args"`
 }
 
+// Handler handles loading and filtering of data.
+type Handler struct {
+	log               *logrus.Entry
+	PrefilterMappings []Prefilter `json:"prefilterMappings"`
+}
+
 // New returns a new Handler.
-func New(log *logrus.Entry) (*Handler, error) {
+func New() (*Handler, error) {
 	h := &Handler{
-		log: log.WithField("package", "handler"),
+		log: logrus.WithField("package", "handler"),
 	}
 
 	if err := h.LoadPrefilter(); err != nil {
@@ -45,9 +68,59 @@ func New(log *logrus.Entry) (*Handler, error) {
 	return h, nil
 }
 
-// LoadObject simulates a json object returned by pipeline.
-type LoadObject struct {
-	AdNetwork []*adnetwork.AdNetwork `json:"data"`
+// Load is the main method to simulate fetching data from pipeline.
+func (h *Handler) Load() (map[string]*adnetwork.AdNetwork, error) {
+	b, err := ioutil.ReadFile(config.GetInstance().Pipefile)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read from pipeline")
+	}
+	load := &LoadObject{}
+	if err = ffjson.Unmarshal(b, load); err != nil {
+		return nil, errors.Wrap(err, "failed to unmrashal pipeline data")
+	}
+
+	filtered := h.Prefilter(load.AdNetwork)
+
+	if len(filtered) == 0 {
+		return nil, errors.New("nil list returned from filtering")
+	}
+
+	return toCountryMap(filtered)
+}
+
+// Store the prefiltered data to redis. dropDB will drop the database before refilling it back up,
+// otherwise non-overwritten old records will remain in database.
+func (h *Handler) Store(mappings map[string]*adnetwork.AdNetwork, dropDB bool) error {
+	rd := config.GetInstance().RedisClient
+	// Not removing old data because it's better to have non-optimal list rather than an empty one.
+	// TODO-DONE: Is it better to have old data or returning a random adNetwork on apiCall?
+	// Possible solution, implement a config to change this behavior. At api call fetching
+	// data with resulting nil set would in case of complete wipe on store return a random latest key anyway.
+	// Possible downside to this is longer response times when missing, since both filtering processes have
+	// to happen at api call in case of a random hit.
+	// Keeping old data might cause hitting old random sets when original countries do not exist with small sets.
+	// (searching for a not existing set (exp. SI), and hitting a not updated set for some other country (exp. GER))
+	pipe := rd.TxPipeline()
+
+	if dropDB {
+		pipe.FlushDB()
+	}
+
+	for country, adNetwork := range mappings {
+		// no TTL because it's better to have non-optimal list to an empty one.
+
+		if err := pipe.Set(country, adNetwork, 0).Err(); err != nil {
+			// log errors and continue
+			h.log.Error(errors.Wrapf(err, "failed to set %q with error", country))
+		}
+
+	}
+
+	if _, err := pipe.Exec(); err != nil {
+		return errors.Wrap(err, "failed to exec transaction")
+	}
+
+	return nil
 }
 
 // LoadPrefilter loads prefilter settings and mappings from config file.
@@ -57,7 +130,7 @@ func (h *Handler) LoadPrefilter() error {
 		return errors.Wrap(err, "failed to read from prefilter config")
 	}
 
-	if err = json.Unmarshal(b, h); err != nil {
+	if err = ffjson.Unmarshal(b, h); err != nil {
 		return errors.Wrap(err, "failed to load unmarshal prefilters")
 	}
 
@@ -166,22 +239,6 @@ func (h *Handler) Prefilter(an []*adnetwork.AdNetwork) []*adnetwork.AdNetwork {
 	}
 
 	return arr
-}
-
-// Load is the main method to simulate fetching data from pipeline.
-func (h *Handler) Load() (map[string]*adnetwork.AdNetwork, error) {
-	b, err := ioutil.ReadFile(config.GetInstance().Pipefile)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read from pipeline")
-	}
-	load := &LoadObject{}
-	if err = json.Unmarshal(b, load); err != nil {
-		return nil, errors.Wrap(err, "failed to unmrashal pipeline data")
-	}
-
-	filtered := h.Prefilter(load.AdNetwork)
-
-	return toCountryMap(filtered)
 }
 
 // returns an array of ad networks as a map[country]network

@@ -1,9 +1,11 @@
 # outfit7-expertise-test
 ![tests](https://github.com/MaticVerbic/outfit7-expertise-test/workflows/test/badge.svg)
 
+
 ## Instructions
 
-  Dependencies Install docker & docker compose as well as makefile
+  Dependencies: <br/>
+  Install docker & docker compose as well as makefile
   1. In case makefile is not available run these commands
       if you do not yet have a docker network named traefik then run the command: `docker network create traefik` then run
       ```
@@ -15,6 +17,7 @@
   3. access the API at: `api.local.verbic.pro`
      1. if you wish to use your own domain you can replace it in `docker-compose.yml`
   4. to run tests simply use `make test` or `docker-compose run --name api --rm api go test -v ./...`
+  5. to run integration tests as well as unit tests use `make integration` or `docker-compose run --name api --rm api go test -v --tags=integration ./...`
 
 ## Design decisions
   1. Programming language: Go
@@ -27,7 +30,10 @@
     - Possible bugs:
       - If random key is returned due to no country association (optimal or not), could include incorrectly filtered output.
         Possible solution: Run both prefilter and postfilter on a single AdNetwork...
+  7. Using `github.com/pquerna/ffjson` for improved performance.
 
+## Brainstorming
+If /update endpoint is not called from an smartphone app and is triggered manually from a cms, a websocket can be implemented to send updates as they happen back to user. This might be useful in case data received from the pipeline is large enough for preprocessing process to take more than a second and has to be segmented. Since there has to either be polling/cronjob to update redis once daily (when pipe is finished) the same service could be called with selectable output, one feeding to std.out (when being run manually) other feeding the socket to the client (so a user can monitor the updating process live). GraphQL natively supports this (possible update, depending on time left after finishing the task).
 
 ## Initial questions and assumptions about the task:
 

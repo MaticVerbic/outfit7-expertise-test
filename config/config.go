@@ -22,15 +22,9 @@ var (
 // GetInstance always returns the same instance of Config
 func GetInstance() *Config {
 	once.Do(func() {
-		instance = New(false)
-	})
-	return instance
-}
-
-// GetTestInstance always returns the same instance of Config
-func GetTestInstance() *Config {
-	once.Do(func() {
-		instance = New(true)
+		if instance == nil {
+			instance = New()
+		}
 	})
 	return instance
 }
@@ -42,19 +36,11 @@ type Config struct {
 	Prefilter   string
 }
 
-// New Config
-func New(test bool) *Config {
+func newWithEnv(env string, omitRedis bool) *Config {
 	// handle env
-	if !test {
-		err := gotenv.Load()
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		err := gotenv.Load("../.env")
-		if err != nil {
-			log.Fatal(err)
-		}
+	err := gotenv.Load(env)
+	if err != nil {
+		log.Fatal(err)
 	}
 	viper.AutomaticEnv()
 
@@ -66,7 +52,7 @@ func New(test bool) *Config {
 	// handle logger
 	c.initLogger()
 
-	if !test {
+	if !omitRedis {
 		c.RedisClient = redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", viper.GetString("REDIS_HOST"), viper.GetInt("REDIS_PORT")),
 			Password: viper.GetString("REDIS_PASSWORD"),
@@ -79,6 +65,28 @@ func New(test bool) *Config {
 	}
 
 	return c
+}
+
+// New Config
+func New() *Config {
+	return newWithEnv(".env", false)
+}
+
+// NewTest Config
+func NewTest() *Config {
+	return newWithEnv("../.env", true)
+}
+
+// NewTestDB Config
+func NewTestDB() *Config {
+	return newWithEnv("../.env", false)
+}
+
+// OverrideInstance ..
+// Allowing tests running both in docker and host machines/CI requires override of some configs.
+// Specifically omitting redis or pointing to a different env.
+func OverrideInstance(c *Config) {
+	instance = c
 }
 
 func (c *Config) initLogger() {

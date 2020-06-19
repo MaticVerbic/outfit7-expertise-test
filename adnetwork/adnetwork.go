@@ -1,5 +1,7 @@
 package adnetwork
 
+import "github.com/pquerna/ffjson/ffjson"
+
 // SDK represents an ad provider.
 type SDK struct {
 	Provider string  `json:"provider"`
@@ -23,6 +25,16 @@ type AdNetwork struct {
 	Interstitial []*SDK `json:"interstitial"`
 	Video        []*SDK `json:"video"`
 	Country      string `json:"country"`
+}
+
+// MarshalBinary satisfies encoding.BinaryMarshaler interface.
+func (an *AdNetwork) MarshalBinary() (data []byte, err error) {
+	return ffjson.Marshal(an)
+}
+
+// UnmarshalBinary satisfies encoding.BinaryUnmarshaler interface.
+func (an *AdNetwork) UnmarshalBinary(data []byte) (err error) {
+	return ffjson.Unmarshal(data, an)
 }
 
 // ContainsAllProviders returns true if all providers are present in specified slice.

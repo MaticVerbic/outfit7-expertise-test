@@ -6,10 +6,21 @@ import (
 	"expertisetest/config"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 )
+
+// Use main to set up new Config without redis.
+// When running integration tests, override this before calling the test.
+func TestMain(m *testing.M) {
+	config.OverrideInstance(config.NewTest())
+	config.GetInstance().Pipefile = "pipefile.json"
+	config.GetInstance().Prefilter = "prefilter.json"
+
+	os.Exit(m.Run())
+}
 
 var arr = []*adnetwork.SDK{
 	{Provider: "Facebook"},
@@ -77,9 +88,7 @@ func TestLoad(t *testing.T) {
 	logger := logrus.New()
 	logger.SetOutput(ioutil.Discard)
 
-	config.GetTestInstance().Pipefile = "pipefile.json"
-	config.GetTestInstance().Prefilter = "prefilter.json"
-	h, err := New(logrus.NewEntry(logger))
+	h, err := New()
 	if err != nil {
 		t.Error(err)
 	}
