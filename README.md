@@ -6,18 +6,19 @@
 
   Dependencies: <br/>
   Install docker & docker compose as well as makefile
-  1. In case makefile is not available run these commands
-      if you do not yet have a docker network named traefik then run the command: `docker network create traefik` then run
-      ```
-      docker-compose up -d traefik
-      docker-compose up -d redis
-      ```
-      to run the api run `docker-compose run --name api --rm api go run cmd/api/main.go`
-  2. first run `make up` then run `make api`
-  3. access the API at: `api.local.verbic.pro`
+  1.  setup
+      1.  First run `make up` then run `make api`.
+      2.  In case makefile is not available run these commands if you do not yet have a docker network named traefik then run the command
+          `docker network create traefik` then run
+          ```
+          docker-compose up -d traefik
+          docker-compose up -d redis
+          ```
+           to run the api run `docker-compose run --name api --rm api go run cmd/api/main.go`
+  2. access the API at: `api.local.verbic.pro`
      1. if you wish to use your own domain you can replace it in `docker-compose.yml`
-  4. to run tests simply use `make test` or `docker-compose run --name api --rm api go test -v ./...`
-  5. to run integration tests as well as unit tests use `make integration` or `docker-compose run --name api --rm api go test -v --tags=integration ./...`
+  3. to run tests simply use `make test` or `docker-compose run --name api --rm api go test -v ./...`
+  4. to run integration tests as well as unit tests use `make integration` or `docker-compose run --name api --rm api go test -v --tags=integration ./...`
 
 ## Design decisions
   1. Programming language: Go
