@@ -34,6 +34,11 @@ type Config struct {
 	RedisClient *redis.Client
 	Pipefile    string // Simulate the complex scoring pipeline
 	Prefilter   string
+	Postfilter  string
+	AdminUser   string
+	AdminPass   string
+	ClientUser  string
+	ClientPass  string
 }
 
 func newWithEnv(env string, omitRedis bool) *Config {
@@ -44,9 +49,28 @@ func newWithEnv(env string, omitRedis bool) *Config {
 	}
 	viper.AutomaticEnv()
 
-	c := &Config{
-		Pipefile:  viper.GetString("PIPE_FILENAME"),
-		Prefilter: viper.GetString("PREFILTER_FILENAME"),
+	c := &Config{}
+
+	if c.Pipefile = viper.GetString("PIPE_FILENAME"); c.Pipefile == "" {
+		log.Fatalf("failed to fetch config: %q", "PIPE_FILENAME")
+	}
+	if c.Prefilter = viper.GetString("PREFILTER_FILENAME"); c.Prefilter == "" {
+		log.Fatalf("failed to fetch config: %q", "PREFILTER_FILENAME")
+	}
+	if c.Postfilter = viper.GetString("POSTFILTER_FILENAME"); c.Postfilter == "" {
+		log.Fatalf("failed to fetch config: %q", "POSTFILTER_FILENAME")
+	}
+	if c.AdminUser = viper.GetString("ADMIN_USER"); c.AdminUser == "" {
+		log.Fatalf("failed to fetch config: %q", "ADMIN_USER")
+	}
+	if c.AdminPass = viper.GetString("ADMIN_PASS"); c.AdminPass == "" {
+		log.Fatalf("failed to fetch config: %q", "ADMIN_PASS")
+	}
+	if c.ClientUser = viper.GetString("CLIENT_USER"); c.ClientUser == "" {
+		log.Fatalf("failed to fetch config: %q", "CLIENT_USER")
+	}
+	if c.ClientPass = viper.GetString("CLIENT_PASS"); c.ClientPass == "" {
+		log.Fatalf("failed to fetch config: %q", "CLIENT_PASS")
 	}
 
 	// handle logger

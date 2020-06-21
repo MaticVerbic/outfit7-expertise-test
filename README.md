@@ -3,7 +3,6 @@
 
 
 ## Instructions
-
   Dependencies: <br/>
   Install docker & docker compose as well as makefile
   1.  setup
@@ -19,6 +18,128 @@
      1. if you wish to use your own domain you can replace it in `docker-compose.yml`
   3. to run tests simply use `make test` or `docker-compose run --name api --rm api go test -v ./...`
   4. to run integration tests as well as unit tests use `make integration` or `docker-compose run --name api --rm api go test -v --tags=integration ./...`
+  5. included in files is `o7.postman_collection.json` which includes automated api tests, to ruin it simply import the collection in postman and run it.
+
+## API Documentation
+  ### List
+  Calling `/list` endpoint will return an ad network object containing 3 separate lists, one of each type, ordered by their score descending as well as the countryCode. Allowed request types are: `GET`.
+  Required url arguments:
+  - `countryCode`
+    - type: string
+    - content: `ISO-3166-1` alpha-2 country code
+    - throws error
+  - `platform`
+    - type: string
+    - content: lowercase string name of device operating system
+    - ignores incorrect or empty values
+  - `osVersion`:
+    - type: string
+    - content: numeric version of operating system
+    - ignores incorrect or empty values
+  - `device`:
+    - type: string
+    - content: numeric type of device (phone, tablet, tv, ...)
+    - ignores incorrect or empty values
+
+
+  Errors:
+  - `missing required argument %q`
+    - status code: `400`
+    - missing url argument with given name
+  - `internal system error`
+    - status code: `500`
+    - system error
+  - `invalid username or password` or http status code `401`
+    - status code: `401`
+    - failed to authenticate/authorize user
+
+  #### Examples
+  Request: <br/>
+  `curl -X GET 'http://api.local.verbic.pro/list?countryCode=SR&platform=android&osVersion=9&device=phone' --header 'Authorization: Basic YWRtaW46YWRtaW5wYXNz'` <br/>
+  Response Success: <br />
+  ```
+  {
+    "network":{
+      "banner":[
+        {
+          "provider":"Instagram",
+          "score":9.57
+        },
+        {
+          "provider":"Twitter",
+          "score":9.06
+        }
+      ],
+      "interstitial":[
+        {
+          "provider":"Facebook",
+          "score":6.59
+        },
+        {
+          "provider":"Facebook",
+          "score":0.99
+        }
+      ],
+      "video":[
+        {
+          "provider":"Tapjoy",
+          "score":8.75
+        },
+        {
+          "provider":"MoPub",
+          "score":6.43
+        },
+        {
+          "provider":"Startapp",
+          "score":6.32
+        },
+        {
+          "provider":"Twitter",
+          "score":5.09
+        }
+      ],
+      "country":"SR"
+    }
+  }
+  ```
+  Response error:
+  ```
+  {
+    "error":"missing required argument \"countryCode\""
+  }
+  ```
+  ### Update
+  Calling `/update` will update the storage with provided json object in the body. Example of required json object can be found in `handler/pipefile.json`.
+  Allowed request types are: `POST`.
+  Required url arguments:
+  - `wipe`
+    - type: boolean
+    - content: true/false
+    - when this argument is true the original content of database gets wiped before new content is inserted. When false new data simply overrides the old data, keeping all old data for which countries were not provided in the body.
+    - default value: false
+    - ignores incorrect or missing values.
+
+  Errors:
+  - `invalid empty request`
+    - status code: `400`
+    - invalid or empty request body
+  - `internal system error`
+    - status code: `500`
+    - system error
+  - `invalid username or password` or http status code `401`
+    - status code: `401`
+    - failed to authenticate/authorize user
+
+  #### Examples
+  Request: <br/>
+  `curl -X POST 'http://api.local.verbic.pro/update?wipe=false' --header 'Authorization: Basic YWRtaW46YWRtaW5wYXNz' -d '{"data": [{"banner": [{"provider": "Facebook","score": 3.2}],"interstitial": [{"provider": "MoPub","score": 5.94}],"video": [{"provider": "Startapp","score": 9.89}],"country": "EN"}]}'` <br/>
+  Response success: http.Status `200`
+  Response error:
+  ```
+  {
+    error":"invalid empty request"
+  }
+  ```
 
 ## Design decisions
   1. Programming language: Go

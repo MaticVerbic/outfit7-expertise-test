@@ -2,6 +2,7 @@ package server
 
 import (
 	"expertisetest/config"
+	"expertisetest/server/endpoints"
 	"expertisetest/server/middlewares"
 	"fmt"
 	"net/http"
@@ -28,7 +29,9 @@ func New() *Server {
 		middleware.RequestID,
 		middleware.RealIP,
 		middleware.Recoverer,
+		NewCORS(),
 		middlewares.LoggerMiddleware,
+		middlewares.AuthenticationMiddleware,
 	}
 
 	for _, mw := range mws {
@@ -41,6 +44,9 @@ func New() *Server {
 		}
 	})
 
+	s.HandleFunc("/list", endpoints.List)
+	s.HandleFunc("/update", endpoints.Update)
+
 	return &Server{
 		router: s,
 	}
@@ -48,7 +54,6 @@ func New() *Server {
 
 // Serve serves the server. :P
 func (s *Server) Serve() {
-
 	errChan := make(chan error, 1)
 	defer close(errChan)
 

@@ -15,8 +15,9 @@ import (
 func TestStore(t *testing.T) {
 	// Override TestMain Config to include redis connection.
 	config.OverrideInstance(config.NewTestDB())
-	config.GetInstance().Pipefile = "pipefile.json"
+	config.GetInstance().Pipefile = "pipefile_test.json"
 	config.GetInstance().Prefilter = "prefilter.json"
+	config.GetInstance().Postfilter = "postfilter.json"
 
 	rd := config.GetInstance().RedisClient
 

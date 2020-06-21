@@ -1,12 +1,40 @@
 package adnetwork
 
-import "github.com/pquerna/ffjson/ffjson"
+import (
+	"fmt"
+	"math/rand"
+	"strconv"
+
+	"github.com/pquerna/ffjson/ffjson"
+)
 
 // SDK represents an ad provider.
 type SDK struct {
 	Provider string  `json:"provider"`
 	Score    float64 `json:"score"`
 	// To add other necessary fields add them here
+}
+
+// used in simulating the pipeline ...
+var sdks = []string{
+	"AdMob", "AdMob-OptOut", "UnityAds", "Facebook",
+	"Startapp", "AppLovin", "HuaweiAds", "Vungle", "Tapjoy",
+	"AppNext", "Chartboost", "InMobi", "Facebook",
+	"Adx", "Twitter", "MoPub", "Instagram",
+}
+
+var countries = []string{
+	"EN", "ES", "HM", "DO", "GG", "SV", "TN", "IN", "PM", "AE", "SA", "LS", "VA", "ST", "TM", "KM",
+	"CG", "SY", "CR", "MT", "SN", "AF", "BH", "AO", "CK", "IM", "CY", "AG", "AL", "UM", "SR", "TG",
+	"TO", "TH", "NO", "FM", "BY", "HN", "ER", "SX", "IQ", "IE", "MO", "VN", "MH", "MZ", "SI", "DJ",
+	"BW", "AR", "TK", "ML", "NZ", "LK", "PN", "BZ", "NE", "LB", "LR", "DM", "SG", "DK", "GB", "HK",
+	"SK", "BJ", "NP", "KG", "PE", "KI", "MA", "NC", "CH", "PH", "AI", "EE", "CN", "VU", "CD", "SD",
+	"SC", "MK", "TZ", "RE", "MP", "SJ", "BS", "CI", "MV", "SZ", "MY", "AX", "NF", "EG", "GQ", "IS",
+	"AS", "LU", "KW", "LV", "VE", "ID", "AZ", "TT", "DZ", "SS", "AW", "AQ", "NG", "MC", "KE", "NU",
+	"IR", "RS", "KP", "BB", "ZW", "UZ", "JM", "GS", "LT", "NI", "TL", "WF", "NL", "GN", "NA", "TR",
+	"PL", "LA", "BE", "HU", "RU", "MG", "RO", "EH", "US", "UY", "LI", "BD", "MW", "EC", "OM", "KR",
+	"MD", "ME", "IT", "NR", "TJ", "MM", "LY", "MN", "GT", "MS", "CZ", "AD", "SL", "FJ", "IL", "SE",
+	"FI", "JP", "TW",
 }
 
 // ScoreSorter implements sorter interface.
@@ -65,6 +93,47 @@ func (an *AdNetwork) ContainsAnyProviders(adType string, providers []string) []s
 	return []string{}
 }
 
+// GenerateList generates a list of random ad networks based on
+// countries and sdks.
+func GenerateList() []*AdNetwork {
+	an := []*AdNetwork{}
+
+	for _, country := range countries {
+		an = append(an, &AdNetwork{
+			Country:      country,
+			Banner:       generateSDK(),
+			Interstitial: generateSDK(),
+			Video:        generateSDK(),
+		})
+	}
+
+	return an
+}
+
+func generateSDK() []*SDK {
+	rn := rand.Intn(len(sdks)-1) + 1
+	included := []int{}
+
+	out := []*SDK{}
+
+	for i := 0; i < rn; i++ {
+		sdkIndex := rand.Intn(len(sdks))
+		if containsInt(included, sdkIndex) {
+			continue
+		}
+		score := fmt.Sprintf("%.2f", rand.Float64()*10)
+		fscore, _ := strconv.ParseFloat(score, 64)
+		out = append(out, &SDK{
+			Provider: sdks[sdkIndex],
+			Score:    fscore,
+		})
+
+		included = append(included, sdkIndex)
+	}
+
+	return out
+}
+
 func containsAll(arr []*SDK, providers []string) bool {
 	for _, key := range providers {
 		found := false
@@ -94,4 +163,14 @@ func containsAny(arr []*SDK, providers []string) []string {
 	}
 
 	return out
+}
+
+func containsInt(arr []int, target int) bool {
+	for _, item := range arr {
+		if item == target {
+			return true
+		}
+	}
+
+	return false
 }

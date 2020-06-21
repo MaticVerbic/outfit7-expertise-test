@@ -16,8 +16,9 @@ import (
 // When running integration tests, override this before calling the test.
 func TestMain(m *testing.M) {
 	config.OverrideInstance(config.NewTest())
-	config.GetInstance().Pipefile = "pipefile.json"
+	config.GetInstance().Pipefile = "pipefile_test.json"
 	config.GetInstance().Prefilter = "prefilter.json"
+	config.GetInstance().Postfilter = "postfilter.json"
 
 	os.Exit(m.Run())
 }

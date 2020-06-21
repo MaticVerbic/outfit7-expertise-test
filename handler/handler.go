@@ -5,7 +5,9 @@ import (
 	"expertisetest/config"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -31,28 +33,23 @@ func GetInstance() *Handler {
 	return instance
 }
 
-type filterType string
-
-const (
-	excludeCountry filterType = "excCtr"
-	mutualPriority filterType = "mutPri"
-)
-
-// LoadObject simulates a json object returned by pipeline.
-type LoadObject struct {
-	AdNetwork []*adnetwork.AdNetwork `json:"data"`
-}
-
 // Prefilter is a definition of a filter running on load.
 type Prefilter struct {
 	FilterType filterType          `json:"type"`
 	Args       map[string][]string `json:"args"`
 }
 
+// Postfilter is a definition of a filter running on api call.
+type Postfilter struct {
+	OsVersion OsVersion `json:"osVersion"`
+	Device    Device    `json:"device"`
+}
+
 // Handler handles loading and filtering of data.
 type Handler struct {
-	log               *logrus.Entry
-	PrefilterMappings []Prefilter `json:"prefilterMappings"`
+	log                *logrus.Entry
+	PrefilterMappings  []Prefilter `json:"prefilterMappings"`
+	PostfilterMappings Postfilter  `json:"postfilterMappings"`
 }
 
 // New returns a new Handler.
@@ -65,7 +62,46 @@ func New() (*Handler, error) {
 		return h, errors.Wrap(err, "failed load prefilter")
 	}
 
+	if err := h.LoadPostfilter(); err != nil {
+		return h, errors.Wrap(err, "failed load postfilter")
+	}
+
 	return h, nil
+}
+
+// Get fetches from redis
+func (h *Handler) Get(key string) (*adnetwork.AdNetwork, error) {
+	an := &adnetwork.AdNetwork{}
+	rd := config.GetInstance().RedisClient
+
+	status, err := rd.Exists(key).Result()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate key")
+	}
+	if status == 0 {
+		return nil, nil
+	}
+	cmd := rd.Get(key)
+
+	if err := cmd.Scan(an); err != nil {
+		return nil, fmt.Errorf("failed to scan key %q with error %v", key, err)
+	}
+
+	return an, nil
+}
+
+// GetRandom fetches a random value from redis
+func (h *Handler) GetRandom() (*adnetwork.AdNetwork, error) {
+	an := &adnetwork.AdNetwork{}
+	rd := config.GetInstance().RedisClient
+
+	key := rd.RandomKey().Val()
+	cmd := rd.Get(key)
+	if err := cmd.Scan(an); err != nil {
+		return nil, fmt.Errorf("failed to scan key %q with error %v", key, err)
+	}
+
+	return an, nil
 }
 
 // Load is the main method to simulate fetching data from pipeline.
@@ -85,7 +121,7 @@ func (h *Handler) Load() (map[string]*adnetwork.AdNetwork, error) {
 		return nil, errors.New("nil list returned from filtering")
 	}
 
-	return toCountryMap(filtered)
+	return ToCountryMap(filtered)
 }
 
 // Store the prefiltered data to redis. dropDB will drop the database before refilling it back up,
@@ -137,6 +173,50 @@ func (h *Handler) LoadPrefilter() error {
 	return nil
 }
 
+// LoadPostfilter loads postfilter settings and mappings from config file.
+func (h *Handler) LoadPostfilter() error {
+	b, err := ioutil.ReadFile(config.GetInstance().Postfilter)
+	if err != nil {
+		return errors.Wrap(err, "failed to read from prefilter config")
+	}
+
+	if err = ffjson.Unmarshal(b, h); err != nil {
+		return errors.Wrap(err, "failed to load unmarshal postfilter")
+	}
+
+	return nil
+}
+
+// OsVersion implements filtering by operating system and its version.
+func (h *Handler) OsVersion(os, version string, an *adnetwork.AdNetwork) *adnetwork.AdNetwork {
+	for _, osFilter := range h.PostfilterMappings.OsVersion.Args {
+		if strings.ToLower(os) == osFilter.Os && containsString(osFilter.Versions, version) {
+			return h.Exclude(an, osFilter.Exclude)
+
+		}
+	}
+
+	return an
+}
+
+// DeviceFilter implements filtering on device type.
+func (h *Handler) DeviceFilter(deviceType string, an *adnetwork.AdNetwork) *adnetwork.AdNetwork {
+	for _, filter := range h.PostfilterMappings.Device.Args {
+		if strings.ToLower(deviceType) == filter.Type {
+			return h.Exclude(an, filter.Exclude)
+
+		}
+	}
+
+	return an
+}
+
+// Postfilter is executed at api call type.
+func (h *Handler) Postfilter(queryVals url.Values, an *adnetwork.AdNetwork) *adnetwork.AdNetwork {
+	an = h.OsVersion(queryVals["platform"][0], queryVals["osVersion"][0], an)
+	return h.DeviceFilter(queryVals["device"][0], an)
+}
+
 // Exclude removes all providers in the list from a specified network.
 func (h *Handler) Exclude(an *adnetwork.AdNetwork, providers []string) *adnetwork.AdNetwork {
 	var wg sync.WaitGroup
@@ -159,6 +239,7 @@ func (h *Handler) Exclude(an *adnetwork.AdNetwork, providers []string) *adnetwor
 		an.Video = excludeFromSDK(an.Video, providers)
 	}()
 
+	wg.Wait()
 	return an
 }
 
@@ -241,8 +322,8 @@ func (h *Handler) Prefilter(an []*adnetwork.AdNetwork) []*adnetwork.AdNetwork {
 	return arr
 }
 
-// returns an array of ad networks as a map[country]network
-func toCountryMap(an []*adnetwork.AdNetwork) (map[string]*adnetwork.AdNetwork, error) {
+// ToCountryMap returns an array of ad networks as a map[country]network
+func ToCountryMap(an []*adnetwork.AdNetwork) (map[string]*adnetwork.AdNetwork, error) {
 	m := map[string]*adnetwork.AdNetwork{}
 
 	for _, network := range an {
@@ -258,28 +339,45 @@ func toCountryMap(an []*adnetwork.AdNetwork) (map[string]*adnetwork.AdNetwork, e
 
 // removes sdks from network if they contain given providers.
 func excludeFromSDK(arr []*adnetwork.SDK, providers []string) []*adnetwork.SDK {
-	if len(arr) == 0 {
+	out := []*adnetwork.SDK{}
+	if arr == nil || len(arr) == 0 {
 		return []*adnetwork.SDK{}
 	}
 
-	i := 0
-	for {
-		if i == len(arr) {
-			break
-		}
-
-		found := false
+	indexes := []int{}
+	for i, item := range arr {
 		for _, provider := range providers {
-			if arr[i].Provider == provider {
-				arr = append(arr[:i], arr[i+1:]...)
-				found = true
+			if provider == item.Provider {
+				indexes = append(indexes, i)
 			}
-		}
-
-		if !found {
-			i++
 		}
 	}
 
-	return arr
+	for i, item := range arr {
+		if !containsInt(indexes, i) {
+			out = append(out, item)
+		}
+	}
+
+	return out
+}
+
+func containsString(arr []string, target string) bool {
+	for _, item := range arr {
+		if item == target {
+			return true
+		}
+	}
+
+	return false
+}
+
+func containsInt(arr []int, target int) bool {
+	for _, item := range arr {
+		if item == target {
+			return true
+		}
+	}
+
+	return false
 }

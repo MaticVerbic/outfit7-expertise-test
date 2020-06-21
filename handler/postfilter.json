@@ -1,0 +1,29 @@
+{
+  "postfilterMappings":{
+    "osVersion":{
+      "args":[
+        {
+          "os":"android",
+          "versions":[
+            "9",
+            "8"
+          ],
+          "exclude":[
+            "AdMob",
+            "AdMob-OptOut"
+          ]
+        }
+      ]
+    },
+    "device":{
+      "args":[
+        {
+          "type":"tablet",
+          "exclude":[
+            "Adx"
+          ]
+        }
+      ]
+    }
+  }
+}
