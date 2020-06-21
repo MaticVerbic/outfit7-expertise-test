@@ -7,7 +7,7 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=true"
-      - "providers.docker.network=traefik"
+      - "--providers.docker.network=traefik"
     ports:
       - "80:80"
       - "8080:8080"
@@ -28,16 +28,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.local.verbic.pro`)"
-      - "traefik.docker.network=traefik"
     networks:
       - traefik
 
   redis:
     image: "redis:alpine"
-    command: redis-server
     container_name: "redis"
-    ports:
-     - "6379:6379"
     networks:
       - traefik
 
