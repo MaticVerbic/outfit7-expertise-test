@@ -21,6 +21,10 @@
   5. included in files is `o7.postman_collection.json` which includes automated api tests, to ruin it simply import the collection in postman and run it.
 
 ## API Documentation
+  ### Authorization
+  Every request requires basic authentication.
+  `/list` can be called by anyone, while `/update` can only be called by admin.
+
   ### List
   Calling `/list` endpoint will return an ad network object containing 3 separate lists, one of each type, ordered by their score descending as well as the countryCode. Allowed request types are: `GET`.
   Required url arguments:

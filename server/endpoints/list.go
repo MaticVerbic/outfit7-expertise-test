@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Response is http response object that is returned to the client.
 type Response struct {
 	Network *adnetwork.AdNetwork `json:"network,omitempty"`
 	Err     string               `json:"error,omitempty"`
@@ -23,6 +24,7 @@ var required = []string{
 	"device",
 }
 
+// List handles /list endpoint functionality.
 var List = func(w http.ResponseWriter, r *http.Request) {
 	if !authorize(r.Context(), w, "any") {
 		return
@@ -46,7 +48,7 @@ var List = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if out == nil {
-		out, err := h.GetRandom()
+		out, err = h.GetRandom()
 		if err != nil {
 			writeResponse(w, http.StatusInternalServerError, errors.Wrap(err, "internal system error").Error(), nil)
 			return

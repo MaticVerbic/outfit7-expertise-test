@@ -9,6 +9,7 @@ import (
 	"github.com/pquerna/ffjson/ffjson"
 )
 
+// Update handles /list endpoint functionality.
 var Update = func(w http.ResponseWriter, r *http.Request) {
 	if !authorize(r.Context(), w, "admin") {
 		return
@@ -20,10 +21,12 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 
 	in := &handler.LoadObject{}
 	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-
 	if err != nil {
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
+	}
+
+	if err = r.Body.Close(); err != nil {
+		// TODO: log error
 	}
 
 	if err = ffjson.Unmarshal(b, in); err != nil {
