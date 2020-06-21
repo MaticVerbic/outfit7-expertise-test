@@ -1,35 +1,53 @@
 package endpoints
 
 import (
+	"expertisetest/config"
 	"expertisetest/handler"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/pkg/errors"
 	"github.com/pquerna/ffjson/ffjson"
+	"github.com/sirupsen/logrus"
 )
 
 // Update handles /list endpoint functionality.
 var Update = func(w http.ResponseWriter, r *http.Request) {
+	log, ok := r.Context().Value(config.LogKey).(*logrus.Entry)
+	if !ok {
+		log = logrus.NewEntry(logrus.New())
+		log.Error("failed to fetch logger")
+	}
+
 	if !authorize(r.Context(), w, "admin") {
 		return
 	}
 
+	if r.Method != http.MethodPost {
+		log.Error("invalid http method on update")
+		writeResponse(w, 400, fmt.Sprintf("invalid method"), nil)
+	}
+
 	if r.Body == nil {
+		log.Error("empty body on update")
 		writeResponse(w, 400, fmt.Sprintf("invalid empty request"), nil)
 	}
 
 	in := &handler.LoadObject{}
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Error(errors.Wrap(err, "failed to read body"))
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
 	}
 
 	if err = r.Body.Close(); err != nil {
+		log.Error(errors.Wrap(err, "failed to close body"))
 		// TODO: log error
 	}
 
 	if err = ffjson.Unmarshal(b, in); err != nil {
+		log.Error(errors.Wrap(err, "failed to unmrashal json"))
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
 	}
 

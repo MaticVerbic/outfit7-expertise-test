@@ -30,6 +30,10 @@ var List = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method != http.MethodGet {
+		writeResponse(w, 400, fmt.Sprintf("invalid method"), nil)
+	}
+
 	vals := r.URL.Query()
 	h := handler.GetInstance()
 
