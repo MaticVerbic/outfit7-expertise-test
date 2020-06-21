@@ -137,7 +137,7 @@
   #### Examples
   Request: <br/>
   `curl -X POST 'http://api.local.verbic.pro/update?wipe=false' --header 'Authorization: Basic YWRtaW46YWRtaW5wYXNz' -d '{"data": [{"banner": [{"provider": "Facebook","score": 3.2}],"interstitial": [{"provider": "MoPub","score": 5.94}],"video": [{"provider": "Startapp","score": 9.89}],"country": "EN"}]}'` <br/>
-  Response success: http.Status `200`
+  Response success: http.Status `200` <br />
   Response error:
   ```
   {
