@@ -41,14 +41,7 @@ type Config struct {
 	ClientPass  string
 }
 
-func newWithEnv(env string, omitRedis bool) *Config {
-	// handle env
-	err := gotenv.Load(env)
-	if err != nil {
-		log.Fatal(err)
-	}
-	viper.AutomaticEnv()
-
+func new(omitRedis bool) *Config {
 	c := &Config{}
 
 	if c.Pipefile = viper.GetString("PIPE_FILENAME"); c.Pipefile == "" {
@@ -93,17 +86,35 @@ func newWithEnv(env string, omitRedis bool) *Config {
 
 // New Config
 func New() *Config {
-	return newWithEnv(".env", false)
+	// handle env
+	_ = gotenv.Load()
+	viper.AutomaticEnv()
+
+	return new(false)
 }
 
 // NewTest Config
 func NewTest() *Config {
-	return newWithEnv("../.env", true)
+	// handle env
+	err := gotenv.Load("../.env")
+	if err != nil {
+		log.Fatal(err)
+	}
+	viper.AutomaticEnv()
+
+	return new(true)
 }
 
 // NewTestDB Config
 func NewTestDB() *Config {
-	return newWithEnv("../.env", false)
+	// handle env
+	err := gotenv.Load("../.env")
+	if err != nil {
+		log.Fatal(err)
+	}
+	viper.AutomaticEnv()
+
+	return new(false)
 }
 
 // OverrideInstance ..
