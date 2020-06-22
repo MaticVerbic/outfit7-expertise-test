@@ -7,8 +7,9 @@
   Install docker & docker compose as well as makefile
   1.  setup
       1.  First run `make up` then run `make api`.
-      2.  In case makefile is not available run these commands if you do not yet have a docker network named traefik then run the command
-          `docker network create traefik` then run
+      2.  In case makefile is not available run these commands
+          1. if you do not yet have a docker network named traefik then run the command `docker network create traefik`
+          2. then run
           ```
           docker-compose up -d traefik
           docker-compose up -d redis
@@ -19,6 +20,14 @@
   3. to run tests simply use `make test` or `docker-compose run --name api --rm api go test -v ./...`
   4. to run integration tests as well as unit tests use `make integration` or `docker-compose run --name api --rm api go test -v --tags=integration ./...`
   5. included in files is `o7.postman_collection.json` which includes automated api tests, to ruin it simply import the collection in postman and run it.
+
+  ### Generating a new test file
+  1. Simply run `go run cmd/pipe/main.go > <filename>.json` for selected file.
+
+  ### Initial warmup
+  1. For initial warmup run `make warmup`
+     1. This step can be omitted by running the api then calling `/update`
+
 
 ## API Documentation
   ### Authorization
