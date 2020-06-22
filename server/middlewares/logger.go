@@ -34,6 +34,7 @@ func LoggerMiddleware(h http.Handler) http.Handler {
 			"user_agent":  r.UserAgent(),
 		}
 
+		// Log only initially with extra fields.
 		log.WithFields(fields).Debug("http request")
 
 		defer func(s time.Time, logger *logrus.Entry) {

@@ -40,6 +40,10 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, 400, fmt.Sprintf("invalid empty request"), nil)
 	}
 
+	if r.Header.Get("Content-Type") != "application/json" {
+		writeResponse(w, 400, fmt.Sprintf("invalid content-type"), nil)
+	}
+
 	// Handle arguments
 	dropDB := false
 	if r.URL.Query()["wipe"] != nil &&

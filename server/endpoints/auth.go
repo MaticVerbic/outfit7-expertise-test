@@ -7,7 +7,9 @@ import (
 	"net/http"
 )
 
+// This function handle the authorization of the clients
 func authorize(ctx context.Context, w http.ResponseWriter, entity string) bool {
+	// Fetch credentials from authentication middleware.
 	user, ok := ctx.Value(config.UserKey).(string)
 	if !ok {
 		writeResponse(w, http.StatusInternalServerError, fmt.Sprintf("internal system error"), nil)
@@ -20,6 +22,7 @@ func authorize(ctx context.Context, w http.ResponseWriter, entity string) bool {
 		return false
 	}
 
+	// Validate the client.
 	c := config.GetInstance()
 	switch entity {
 	case "admin":
