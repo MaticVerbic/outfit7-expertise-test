@@ -21,6 +21,7 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !authorize(r.Context(), w, "admin") {
+		log.WithField("user", r.Context().Value(config.UserKey)).Debug("authorized")
 		return
 	}
 

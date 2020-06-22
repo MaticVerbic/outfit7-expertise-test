@@ -6,98 +6,6 @@
 	},
 	"item": [
 		{
-			"name": "list - CN - Android 9",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "c4391cdf-30f9-41d9-84f1-85eb16f01312",
-						"exec": [
-							"function contains (arr, targets) {\r",
-							"    console.log(arr)\r",
-							"    for (i = 0; i < arr.length; i++) {\r",
-							"        for (j = 0; j < arr.length; j++) {\r",
-							"            if (arr[i].provider == targets[j]) {\r",
-							"                return true;\r",
-							"            }\r",
-							"        }\r",
-							"    }\r",
-							"    return false;\r",
-							"}\r",
-							"\r",
-							"// Test both pre and post filters. \r",
-							"pm.test(\"Filter test\", function () {\r",
-							"    var data = pm.response.json();\r",
-							"    pm.expect(contains(data.network.banner, [\"Facebook\", \"AdMob\", \"AdMob-Optout\"])).eq(false);\r",
-							"    pm.expect(contains(data.network.interstitial, [\"Facebook\", \"AdMob\", \"AdMob-Optout\"])).eq(false);\r",
-							"    pm.expect(contains(data.network.video, [\"Facebook\", \"AdMob\", \"AdMob-Optout\"])).eq(false);\r",
-							"})\r",
-							"\r",
-							"// If any list is 0 length, fail. \r",
-							"pm.test(\"Lists exist\", function() {\r",
-							"    var data = pm.response.json();\r",
-							"    pm.expect(data.network.banner.length).to.be.above(0);\r",
-							"    pm.expect(data.network.interstitial.length).to.be.above(0);\r",
-							"    pm.expect(data.network.video.length).to.be.above(0);\r",
-							"})"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "adminpass",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "admin",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://api.local.verbic.pro/list?countryCode=CN&platform=android&osVersion=9&device=phone",
-					"protocol": "http",
-					"host": [
-						"api",
-						"local",
-						"verbic",
-						"pro"
-					],
-					"path": [
-						"list"
-					],
-					"query": [
-						{
-							"key": "countryCode",
-							"value": "CN"
-						},
-						{
-							"key": "platform",
-							"value": "android"
-						},
-						{
-							"key": "osVersion",
-							"value": "9"
-						},
-						{
-							"key": "device",
-							"value": "phone"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Load - admin - false",
 			"request": {
 				"auth": {
@@ -169,6 +77,182 @@
 							"    pm.expect(contains(data.network.banner, [\"HuaweiAds\"])).eq(false);\r",
 							"    pm.expect(contains(data.network.interstitial, [\"HuaweiAds\"])).eq(false);\r",
 							"    pm.expect(contains(data.network.video, [\"HuaweiAds\"])).eq(false);\r",
+							"})\r",
+							"\r",
+							"// If any list is 0 length, fail. \r",
+							"pm.test(\"Lists exist\", function() {\r",
+							"    var data = pm.response.json();\r",
+							"    pm.expect(data.network.banner.length).to.be.above(0);\r",
+							"    pm.expect(data.network.interstitial.length).to.be.above(0);\r",
+							"    pm.expect(data.network.video.length).to.be.above(0);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "adminpass",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://api.local.verbic.pro/list?countryCode=CN&platform=android&osVersion=9&device=phone",
+					"protocol": "http",
+					"host": [
+						"api",
+						"local",
+						"verbic",
+						"pro"
+					],
+					"path": [
+						"list"
+					],
+					"query": [
+						{
+							"key": "countryCode",
+							"value": "CN"
+						},
+						{
+							"key": "platform",
+							"value": "android"
+						},
+						{
+							"key": "osVersion",
+							"value": "9"
+						},
+						{
+							"key": "device",
+							"value": "phone"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list - AN- Missing country",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c4391cdf-30f9-41d9-84f1-85eb16f01312",
+						"exec": [
+							"function contains (arr, targets) {\r",
+							"    console.log(arr)\r",
+							"    for (i = 0; i < arr.length; i++) {\r",
+							"        for (j = 0; j < arr.length; j++) {\r",
+							"            if (arr[i].provider == targets[j]) {\r",
+							"                return true;\r",
+							"            }\r",
+							"        }\r",
+							"    }\r",
+							"    return false;\r",
+							"}\r",
+							"\r",
+							"// If any list is 0 length, fail. \r",
+							"pm.test(\"Lists exist\", function() {\r",
+							"    var data = pm.response.json();\r",
+							"    pm.expect(data.network.banner.length).to.be.above(0);\r",
+							"    pm.expect(data.network.interstitial.length).to.be.above(0);\r",
+							"    pm.expect(data.network.video.length).to.be.above(0);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "adminpass",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://api.local.verbic.pro/list?countryCode=AN&platform=iOS&osVersion=12.4&device=phone",
+					"protocol": "http",
+					"host": [
+						"api",
+						"local",
+						"verbic",
+						"pro"
+					],
+					"path": [
+						"list"
+					],
+					"query": [
+						{
+							"key": "countryCode",
+							"value": "AN"
+						},
+						{
+							"key": "platform",
+							"value": "iOS"
+						},
+						{
+							"key": "osVersion",
+							"value": "12.4"
+						},
+						{
+							"key": "device",
+							"value": "phone"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list - CN - Android 9",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7874185e-18fa-4f76-9d61-94a926c7ab8f",
+						"exec": [
+							"function contains (arr, targets) {\r",
+							"    console.log(arr)\r",
+							"    for (i = 0; i < arr.length; i++) {\r",
+							"        for (j = 0; j < arr.length; j++) {\r",
+							"            if (arr[i].provider == targets[j]) {\r",
+							"                return true;\r",
+							"            }\r",
+							"        }\r",
+							"    }\r",
+							"    return false;\r",
+							"}\r",
+							"\r",
+							"// Test both pre and post filters. \r",
+							"pm.test(\"Filter test\", function () {\r",
+							"    var data = pm.response.json();\r",
+							"    pm.expect(contains(data.network.banner, [\"Facebook\", \"AdMob\", \"AdMob-Optout\"])).eq(false);\r",
+							"    pm.expect(contains(data.network.interstitial, [\"Facebook\", \"AdMob\", \"AdMob-Optout\"])).eq(false);\r",
+							"    pm.expect(contains(data.network.video, [\"Facebook\", \"AdMob\", \"AdMob-Optout\"])).eq(false);\r",
 							"})\r",
 							"\r",
 							"// If any list is 0 length, fail. \r",
