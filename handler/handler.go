@@ -115,10 +115,8 @@ func (h *Handler) GetRandom() (*adnetwork.AdNetwork, error) {
 
 // Load is the main method to simulate fetching data from pipeline.
 func (h *Handler) Load() (map[string]*adnetwork.AdNetwork, error) {
-	file := config.GetInstance().Pipefile
-
-	h.log.WithField("filename", file).Debug("load pipefile")
-	b, err := ioutil.ReadFile(file)
+	h.log.WithField("filename", config.GetInstance().Pipefile).Debug("load pipefile")
+	b, err := ioutil.ReadFile(config.GetInstance().Pipefile)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read from pipeline")
 	}
@@ -174,11 +172,9 @@ func (h *Handler) Store(mappings map[string]*adnetwork.AdNetwork, dropDB bool) e
 
 // LoadPrefilter loads prefilter settings and mappings from config file.
 func (h *Handler) LoadPrefilter() error {
-	file := config.GetInstance().Prefilter
+	h.log.WithField("filename", config.GetInstance().Prefilter).Debug("load prefilter")
 
-	h.log.WithField("filename", file).Debug("load prefilter")
-
-	b, err := ioutil.ReadFile(file)
+	b, err := ioutil.ReadFile(config.GetInstance().Prefilter)
 	if err != nil {
 		return errors.Wrap(err, "failed to read from prefilter config")
 	}
@@ -192,9 +188,7 @@ func (h *Handler) LoadPrefilter() error {
 
 // LoadPostfilter loads postfilter settings and mappings from config file.
 func (h *Handler) LoadPostfilter() error {
-	file := config.GetInstance().Postfilter
-
-	h.log.WithField("filename", file).Debug("load postfiler")
+	h.log.WithField("filename", config.GetInstance().Postfilter).Debug("load postfiler")
 
 	b, err := ioutil.ReadFile(config.GetInstance().Postfilter)
 	if err != nil {

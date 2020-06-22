@@ -151,6 +151,7 @@ func (c *Config) initLogger() {
 	})
 }
 
+// DisableLogging enables to disable all logging for testing.
 func (c *Config) DisableLogging() {
 	logrus.SetOutput(ioutil.Discard)
 }
