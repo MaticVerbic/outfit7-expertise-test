@@ -5,11 +5,8 @@ import (
 	"expertisetest/adnetwork"
 	"expertisetest/config"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Use main to set up new Config without redis.
@@ -19,7 +16,7 @@ func TestMain(m *testing.M) {
 	config.GetInstance().Pipefile = "pipefile_test.json"
 	config.GetInstance().Prefilter = "prefilter.json"
 	config.GetInstance().Postfilter = "postfilter.json"
-
+	config.GetInstance().DisableLogging()
 	os.Exit(m.Run())
 }
 
@@ -86,9 +83,6 @@ var an = map[string]*adnetwork.AdNetwork{
 }
 
 func TestLoad(t *testing.T) {
-	logger := logrus.New()
-	logger.SetOutput(ioutil.Discard)
-
 	h, err := New()
 	if err != nil {
 		t.Error(err)

@@ -44,7 +44,6 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 
 	if err = r.Body.Close(); err != nil {
 		log.Error(errors.Wrap(err, "failed to close body"))
-		// TODO: log error
 	}
 
 	if err = ffjson.Unmarshal(b, in); err != nil {
@@ -53,6 +52,8 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h := handler.GetInstance()
+	h.SetLogger(log)
+
 	an := h.Prefilter(in.AdNetwork)
 	m, err := handler.ToCountryMap(an)
 	if err != nil {

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -134,7 +135,13 @@ func OverrideInstance(c *Config) {
 }
 
 func (c *Config) initLogger() {
-	logrus.SetLevel(logrus.InfoLevel)
+	viper.SetDefault("log_level", "info")
+	level, err := logrus.ParseLevel(viper.GetString("LOG_LEVEL"))
+	if err != nil {
+		log.Fatal("invalid log level")
+	}
+
+	logrus.SetLevel(level)
 	logrus.SetOutput(os.Stdout)
 	logrus.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:   viper.GetBool("LOG_FULL_TIMESTAMP"),
@@ -142,4 +149,8 @@ func (c *Config) initLogger() {
 		ForceColors:     viper.GetBool("LOG_FORCE_COLORS"),
 		DisableColors:   viper.GetBool("LOG_DISABLE_COLORS"),
 	})
+}
+
+func (c *Config) DisableLogging() {
+	logrus.SetOutput(ioutil.Discard)
 }

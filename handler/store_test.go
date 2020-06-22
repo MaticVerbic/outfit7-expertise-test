@@ -19,8 +19,9 @@ func TestStore(t *testing.T) {
 	config.GetInstance().Prefilter = "prefilter.json"
 	config.GetInstance().Postfilter = "postfilter.json"
 
-	rd := config.GetInstance().RedisClient
+	config.GetInstance().DisableLogging()
 
+	rd := config.GetInstance().RedisClient
 	h := GetInstance()
 
 	networks, err := h.Load()

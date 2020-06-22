@@ -46,6 +46,7 @@ var List = func(w http.ResponseWriter, r *http.Request) {
 
 	vals := r.URL.Query()
 	h := handler.GetInstance()
+	h.SetLogger(log)
 
 	for _, item := range required {
 		rec := vals[item]
@@ -64,6 +65,7 @@ var List = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if out == nil {
+		log.WithField("countryCode", vals["countryCode"][0]).Warn("cache miss")
 		out, err = h.GetRandom()
 		if err != nil {
 			log.Error(errors.Wrap(err, "failed to fetch random"))
@@ -90,6 +92,7 @@ var List = func(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if !testEmpty(out) {
+					log.WithField("countryCode", vals["countryCode"][0]).Warn("retry miss")
 					break
 				}
 			}
@@ -116,6 +119,7 @@ var List = func(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if !testEmpty(out) {
+				log.WithField("countryCode", vals["countryCode"][0]).Warn("retry miss")
 				break
 			}
 		}
