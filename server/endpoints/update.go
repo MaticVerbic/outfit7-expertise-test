@@ -32,16 +32,19 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		log.Error("invalid http method on update")
 		writeResponse(w, 400, fmt.Sprintf("invalid method"), nil)
+		return
 	}
 
 	// Validate body
 	if r.Body == nil {
 		log.Error("empty body on update")
 		writeResponse(w, 400, fmt.Sprintf("invalid empty request"), nil)
+		return
 	}
 
 	if r.Header.Get("Content-Type") != "application/json" {
 		writeResponse(w, 400, fmt.Sprintf("invalid content-type"), nil)
+		return
 	}
 
 	// Handle arguments
@@ -58,6 +61,7 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(errors.Wrap(err, "failed to read body"))
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
+		return
 	}
 
 	if err = r.Body.Close(); err != nil {
@@ -67,6 +71,7 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 	if err = ffjson.Unmarshal(b, in); err != nil {
 		log.Error(errors.Wrap(err, "failed to unmrashal json"))
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
+		return
 	}
 
 	// Parse data and store
@@ -77,10 +82,12 @@ var Update = func(w http.ResponseWriter, r *http.Request) {
 	m, err := handler.ToCountryMap(an)
 	if err != nil {
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
+		return
 	}
 
 	if err = h.Store(m, dropDB); err != nil {
 		writeResponse(w, 500, fmt.Sprintf("internal system error"), nil)
+		return
 	}
 
 	writeResponse(w, 200, "", nil)
