@@ -154,6 +154,21 @@
   }
   ```
 
+## Conclusions:
+  1. Authorization
+     1. Since no authorization has been specified a simple basic auth has been implemented.Ideally there would be a better storage for storing users than fetching from env, as well as use of JWT token, with dedicated login point.
+  2. Pre-/Post- filtering
+     1. Ideally rules would be stored in a relational database. So they can be updated dynamically regardless of the state of the api.
+  3. Pre-production:
+     1. Since both redis and container-registry are paid google cloud services I've decided against hosting.
+     2. Ideally before hosting an SSL solution would be implemented.
+     3. CI/CD
+        1. Build image from docker-file and push on container registry, trigger being a new tag on github.
+        2. Preferably deploy on the image on kubernetes (GKE).
+     4. Both extra test cases and more complete testing suite.
+  4. Handler is the main package used to handle data. The idea behind it is to end up with something that is easy to fix, update, upgrade or expand overtime as requirements are changed/added.
+
+
 ## Design decisions
   1. Programming language: Go
   2. HTTP framework: chi
